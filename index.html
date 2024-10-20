@@ -73,6 +73,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
     <script>
         let qrCanvas = document.getElementById('qr-canvas');
         let context = qrCanvas.getContext('2d');
@@ -118,29 +120,47 @@
         }
 
         function downloadQRCode(format, background = 'transparent') {
-            let link = document.createElement('a');
+    let link = document.createElement('a');
 
-            if (format === 'png') {
-                if (background === 'white') {
-                    let whiteBackgroundCanvas = document.createElement('canvas');
-                    whiteBackgroundCanvas.width = qrCanvas.width;
-                    whiteBackgroundCanvas.height = qrCanvas.height;
-                    let whiteContext = whiteBackgroundCanvas.getContext('2d');
-                    whiteContext.fillStyle = '#FFFFFF';
-                    whiteContext.fillRect(0, 0, whiteBackgroundCanvas.width, whiteBackgroundCanvas.height);
-                    whiteContext.drawImage(qrCanvas, 0, 0);
-                    link.href = whiteBackgroundCanvas.toDataURL('image/png');
-                } else {
-                    link.href = qrCanvas.toDataURL('image/png');
-                }
-                link.download = 'qr-code.png';
-                link.click();
-            } else if (format === 'pdf') {
-                let pdf = new jsPDF();
-                pdf.addImage(qrCanvas.toDataURL('image/png'), 'PNG', 15, 40, 180, 160);
-                pdf.save('qr-code.pdf');
-            }
+    if (format === 'png') {
+        if (background === 'white') {
+            // Create a canvas with a white background for the white background option
+            let whiteBackgroundCanvas = document.createElement('canvas');
+            whiteBackgroundCanvas.width = qrCanvas.width;
+            whiteBackgroundCanvas.height = qrCanvas.height;
+            let whiteContext = whiteBackgroundCanvas.getContext('2d');
+            whiteContext.fillStyle = '#FFFFFF'; // Set the white background
+            whiteContext.fillRect(0, 0, whiteBackgroundCanvas.width, whiteBackgroundCanvas.height); // Fill the canvas with white
+            whiteContext.drawImage(qrCanvas, 0, 0); // Draw the QR code on top of the white background
+            link.href = whiteBackgroundCanvas.toDataURL('image/png'); // Get PNG data with white background
+        } else if (background === 'transparent') {
+            // Clear the canvas to ensure it has a transparent background
+            let transparentCanvas = document.createElement('canvas');
+            transparentCanvas.width = qrCanvas.width;
+            transparentCanvas.height = qrCanvas.height;
+            let transparentContext = transparentCanvas.getContext('2d');
+
+            // Clear the canvas to ensure transparency
+            transparentContext.clearRect(0, 0, transparentCanvas.width, transparentCanvas.height);
+
+            // Draw the QR code on top of the cleared (transparent) background
+            transparentContext.drawImage(qrCanvas, 0, 0);
+            link.href = transparentCanvas.toDataURL('image/png'); // Get PNG data with transparent background
         }
+
+        link.download = 'qr-code.png'; // Set file name
+        link.click(); // Trigger download
+    } else if (format === 'pdf') {
+        const { jsPDF } = window.jspdf; // Access jsPDF from window
+        let pdf = new jsPDF();
+        pdf.addImage(qrCanvas.toDataURL('image/png'), 'PNG', 15, 40, 180, 160); // Add QR code to PDF
+        pdf.save('qr-code.pdf'); // Save the PDF file
+    }
+}
+
+
+
+
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 </body>
